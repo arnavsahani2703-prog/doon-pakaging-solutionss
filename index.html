@@ -6,18 +6,22 @@
 <title>Doon Packaging Solutions</title>
 
 <style>
-body{margin:0;font-family:Segoe UI;background:#f6f6f6}
+body{margin:0;font-family:'Segoe UI';background:#f4f4f4}
 
 /* NAV */
 .nav{
-background:#111;color:white;
-padding:12px;display:flex;justify-content:space-between;
+position:sticky;top:0;
+background:white;padding:12px;
+display:flex;justify-content:space-between;
+box-shadow:0 2px 10px rgba(0,0,0,0.1);
+z-index:10;
 }
 
-/* BANNER */
-.banner{
-background:linear-gradient(#000,#333);
-color:white;text-align:center;padding:25px;
+/* SEARCH */
+.search{
+padding:10px;margin:10px;
+border-radius:10px;border:1px solid #ddd;
+width:calc(100% - 20px);
 }
 
 /* CATEGORY */
@@ -25,7 +29,8 @@ color:white;text-align:center;padding:25px;
 display:flex;gap:10px;overflow-x:auto;padding:10px;
 }
 .cat button{
-padding:8px 12px;border:none;border-radius:20px;background:#eee;
+border:none;padding:8px 15px;border-radius:20px;
+background:#eee;
 }
 
 /* GRID */
@@ -36,46 +41,57 @@ gap:10px;padding:10px;
 }
 
 .card{
-background:white;padding:10px;border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+background:white;padding:12px;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
 
-.card img{
-width:100%;border-radius:8px;height:120px;object-fit:cover;
-}
+/* removed image styling */
 
+/* PRICE */
 .price{color:#ff5722;font-weight:bold}
 
 /* BUTTON */
 .controls{
-display:flex;justify-content:space-between;margin-top:5px;
+display:flex;justify-content:space-between;margin-top:8px;
 }
 .controls button{
 background:black;color:white;border:none;
 padding:5px 10px;border-radius:5px;
 }
 
-/* CART */
+/* CART DRAWER */
 .cart{
-position:fixed;bottom:0;width:100%;
-background:white;border-top:2px solid #ddd;
+position:fixed;
+bottom:0;width:100%;
+background:white;
+border-top:2px solid #ddd;
+max-height:50%;
+overflow:auto;
 padding:10px;
 }
 
+/* FORM */
 input{
-width:100%;padding:8px;margin-top:5px;
-border-radius:6px;border:1px solid #ccc;
+width:100%;padding:10px;margin-top:5px;
+border-radius:8px;border:1px solid #ccc;
 }
 
+/* ORDER */
 .order{
 background:#25D366;color:white;
-padding:10px;text-align:center;
-border-radius:6px;margin-top:8px;
+padding:12px;text-align:center;
+border-radius:8px;margin-top:10px;
 }
 
-/* REVIEWS */
-.review{
-background:white;margin:10px;padding:10px;border-radius:10px;
+/* TOAST */
+.toast{
+position:fixed;
+top:20px;left:50%;
+transform:translateX(-50%);
+background:black;color:white;
+padding:10px 20px;border-radius:20px;
+display:none;
 }
 </style>
 </head>
@@ -83,41 +99,25 @@ background:white;margin:10px;padding:10px;border-radius:10px;
 <body>
 
 <div class="nav">
-  <div>Doon Packaging</div>
-  <div>🛒 <span id="count">0</span></div>
+<b>Doon Packaging</b>
+🛒 <span id="count">0</span>
 </div>
 
-<div class="banner">
-  <h2>Premium Packaging Store</h2>
-  <p>Boxes | Tape | Wrap | Bulk Orders</p>
-</div>
+<input class="search" placeholder="Search product..." onkeyup="search(this.value)">
 
 <div class="cat">
 <button onclick="filter('all')">All</button>
 <button onclick="filter('box')">Boxes</button>
-<button onclick="filter('bag')">Bags</button>
-<button onclick="filter('wrap')">Wrap</button>
-<button onclick="filter('film')">Film</button>
 <button onclick="filter('tape')">Tape</button>
-<button onclick="filter('roll')">Roll</button>
+<button onclick="filter('wrap')">Wrap</button>
 </div>
 
 <div class="grid" id="grid"></div>
 
-<!-- REVIEWS -->
-<div class="review">
-⭐⭐⭐⭐⭐ Sonam Yadav: Truly unique shop, great quality boxes and full packing range.
-</div>
-<div class="review">
-⭐⭐⭐⭐⭐ Rahul: Best packaging store in Dehradun, fast service.
-</div>
-<div class="review">
-⭐⭐⭐⭐ Aman: Good pricing and bulk options available.
-</div>
-
 <!-- CART -->
 <div class="cart">
-<div>Items: <span id="items">0</span> | ₹<span id="total">0</span></div>
+<div id="cartItems"></div>
+<div><b>Total: ₹<span id="total">0</span></b></div>
 
 <input id="name" placeholder="Your Name">
 <input id="phone" placeholder="Phone Number">
@@ -125,61 +125,27 @@ background:white;margin:10px;padding:10px;border-radius:10px;
 <div class="order" onclick="order()">Order on WhatsApp</div>
 </div>
 
+<div class="toast" id="toast">Added to cart</div>
+
 <script>
 
 let products=[
-
-/* BOXES */
-{name:"3 Ply Brown Box",price:95,cat:"box",img:
-{name:"7 Ply Corrugated Box",price:175,cat:"box",
-{name:"Cardboard Box",price:140,cat:"box",img:
-{name:"Folding Carton",price:90,cat:"box",img:
-{name:"Laminated Carton",price:95,cat:"box",img:
-{name:"Pizza Box",price:14,cat:"box",img:"https:
-{name:"Carton Box (Bulk)",price:40,cat:"box",extra:"₹37–₹47"},
-{name:"Shifting Box",price:120,cat:"box",extra:"₹100–₹180"},
-
-/* BAGS */
-{name:"Shopping Packets",price:6,cat:"bag",img:
-{name:"Plastic Bags",price:140,cat:"bag",img:
-
-/* WRAP */
-{name:"Bubble Wrap",price:990,cat:"wrap",img:
-{name:"Bubble Roll",price:1000,cat:"wrap",img:
-{name:"Foam Sheets",price:3600,cat:"wrap",img:
-{name:"Thermocol",price:27,cat:"wrap",img;
-{name:"Packing Paper",price:30,cat:"wrap",
-{name:"Bubble Wrap Bulk",price:800,cat:"wrap",extra:"₹550–₹1100"},
-
-/* FILM */
-{name:"Stretch Wrap",price:840,cat:"film",;
-{name:"Shrink Wrap",price:1200,cat:"film",;
-{name:"Laminated Film",price:700,cat:"film",;
-{name:"Stretch Film Bulk",price:700,cat:"film"},
-
-/* TAPE */
-{name:"Packing Tape",price:80,cat:"tape",;
-{name:"Labels & Markers",price:20,cat:"tape",;
-{name:"Tape Bulk",price:100,cat:"tape",extra:"₹75–₹140"},
-
-/* ROLL */
-{name:"Corrugated Roll",price:30,cat:"roll":"https:},
-{name:"Corrugated Roll Bulk",price:60,cat:"roll",extra:"₹50–₹65/kg"}
-
+{name:"Small Box",price:10,cat:"box"},
+{name:"Medium Box",price:15,cat:"box"},
+{name:"Brown Tape",price:120,cat:"tape"},
+{name:"Bubble Wrap",price:200,cat:"wrap"}
 ];
 
 let cart={},total=0,current="all";
 
-function show(){
+function showProducts(){
 let html="";
 products.forEach(p=>{
 if(current=="all"||p.cat==current){
 html+=`
 <div class="card">
-<img src="${p.img || 'https://via.placeholder.com/150'}">
-<p>${p.name}</p>
+<p><b>${p.name}</b></p>
 <div class="price">₹${p.price}</div>
-${p.extra?`<div style="font-size:12px;color:gray">${p.extra}</div>`:""}
 <div class="controls">
 <button onclick="add('${p.name}',${p.price})">+</button>
 <button onclick="removeItem('${p.name}',${p.price})">-</button>
@@ -189,13 +155,50 @@ ${p.extra?`<div style="font-size:12px;color:gray">${p.extra}</div>`:""}
 });
 document.getElementById("grid").innerHTML=html;
 }
-show();
+showProducts();
 
-function filter(c){current=c;show();}
+function filter(c){current=c;showProducts();}
+
+function search(q){
+q=q.toLowerCase();
+let html="";
+products.forEach(p=>{
+if(p.name.toLowerCase().includes(q)){
+html+=`
+<div class="card">
+<p><b>${p.name}</b></p>
+<div class="price">₹${p.price}</div>
+<div class="controls">
+<button onclick="add('${p.name}',${p.price})">+</button>
+<button onclick="removeItem('${p.name}',${p.price})">-</button>
+</div>
+</div>`;
+}
+});
+document.getElementById("grid").innerHTML=html;
+}
+
+function toast(){
+let t=document.getElementById("toast");
+t.style.display="block";
+setTimeout(()=>t.style.display="none",1000);
+}
+
+function update(){
+let count=0,html="";
+for(let i in cart){
+count+=cart[i];
+html+=i+" x "+cart[i]+"<br>";
+}
+document.getElementById("count").innerText=count;
+document.getElementById("cartItems").innerHTML=html;
+document.getElementById("total").innerText=total;
+}
 
 function add(n,p){
 cart[n]=(cart[n]||0)+1;
 total+=p;
+toast();
 update();
 }
 
@@ -206,14 +209,6 @@ total-=p;
 if(cart[n]==0) delete cart[n];
 update();
 }
-}
-
-function update(){
-let count=0;
-for(let i in cart){count+=cart[i];}
-document.getElementById("count").innerText=count;
-document.getElementById("items").innerText=count;
-document.getElementById("total").innerText=total;
 }
 
 function order(){
@@ -228,7 +223,6 @@ msg+="Total ₹"+total;
 
 window.open("https://wa.me/917017670100?text="+msg);
 }
-
 </script>
 
 </body>
