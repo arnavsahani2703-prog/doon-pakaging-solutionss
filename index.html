@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doon Packaging Solutions</title>
+
+<style>
+body{margin:0;font-family:Segoe UI;background:#f6f6f6}
+
+/* NAV */
+.nav{
+background:#111;color:white;
+padding:12px;display:flex;justify-content:space-between;
+}
+
+/* BANNER */
+.banner{
+background:linear-gradient(#000,#333);
+color:white;text-align:center;padding:25px;
+}
+
+/* CATEGORY */
+.cat{
+display:flex;gap:10px;overflow-x:auto;padding:10px;
+}
+.cat button{
+padding:8px 12px;border:none;border-radius:20px;background:#eee;
+}
+
+/* GRID */
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;padding:10px;
+}
+
+.card{
+background:white;padding:10px;border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card img{
+width:100%;border-radius:8px;height:120px;object-fit:cover;
+}
+
+.price{color:#ff5722;font-weight:bold}
+
+/* BUTTON */
+.controls{
+display:flex;justify-content:space-between;margin-top:5px;
+}
+.controls button{
+background:black;color:white;border:none;
+padding:5px 10px;border-radius:5px;
+}
+
+/* CART */
+.cart{
+position:fixed;bottom:0;width:100%;
+background:white;border-top:2px solid #ddd;
+padding:10px;
+}
+
+input{
+width:100%;padding:8px;margin-top:5px;
+border-radius:6px;border:1px solid #ccc;
+}
+
+.order{
+background:#25D366;color:white;
+padding:10px;text-align:center;
+border-radius:6px;margin-top:8px;
+}
+
+/* REVIEWS */
+.review{
+background:white;margin:10px;padding:10px;border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="nav">
+  <div>Doon Packaging</div>
+  <div>🛒 <span id="count">0</span></div>
+</div>
+
+<div class="banner">
+  <h2>Premium Packaging Store</h2>
+  <p>Boxes | Tape | Wrap | Bulk Orders</p>
+</div>
+
+<div class="cat">
+<button onclick="filter('all')">All</button>
+<button onclick="filter('box')">Boxes</button>
+<button onclick="filter('bag')">Bags</button>
+<button onclick="filter('wrap')">Wrap</button>
+<button onclick="filter('film')">Film</button>
+<button onclick="filter('tape')">Tape</button>
+<button onclick="filter('roll')">Roll</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- REVIEWS -->
+<div class="review">
+⭐⭐⭐⭐⭐ Sonam Yadav: Truly unique shop, great quality boxes and full packing range.
+</div>
+<div class="review">
+⭐⭐⭐⭐⭐ Rahul: Best packaging store in Dehradun, fast service.
+</div>
+<div class="review">
+⭐⭐⭐⭐ Aman: Good pricing and bulk options available.
+</div>
+
+<!-- CART -->
+<div class="cart">
+<div>Items: <span id="items">0</span> | ₹<span id="total">0</span></div>
+
+<input id="name" placeholder="Your Name">
+<input id="phone" placeholder="Phone Number">
+
+<div class="order" onclick="order()">Order on WhatsApp</div>
+</div>
+
+<script>
+
+let products=[
+
+/* BOXES */
+{name:"3 Ply Brown Box",price:95,cat:"box",img:"https://images.unsplash.com/photo-1606813909354-dc6c3b6d6c06"},
+{name:"7 Ply Corrugated Box",price:175,cat:"box",img:"https://images.unsplash.com/photo-1598300056393-4aac492f4344"},
+{name:"Cardboard Box",price:140,cat:"box",img:"https://images.unsplash.com/photo-1586769852836-bc069f19e1b6"},
+{name:"Folding Carton",price:90,cat:"box",img:"https://images.unsplash.com/photo-1606813909354-dc6c3b6d6c06"},
+{name:"Laminated Carton",price:95,cat:"box",img:"https://images.unsplash.com/photo-1598300056393-4aac492f4344"},
+{name:"Pizza Box",price:14,cat:"box",img:"https://images.unsplash.com/photo-1586769852836-bc069f19e1b6"},
+{name:"Carton Box (Bulk)",price:40,cat:"box",extra:"₹37–₹47"},
+{name:"Shifting Box",price:120,cat:"box",extra:"₹100–₹180"},
+
+/* BAGS */
+{name:"Shopping Packets",price:6,cat:"bag",img:"https://images.unsplash.com/photo-1606813909354-dc6c3b6d6c06"},
+{name:"Plastic Bags",price:140,cat:"bag",img:"https://images.unsplash.com/photo-1598300056393-4aac492f4344"},
+
+/* WRAP */
+{name:"Bubble Wrap",price:990,cat:"wrap",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Bubble Roll",price:1000,cat:"wrap",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d",extra:"₹850–₹1200"},
+{name:"Foam Sheets",price:3600,cat:"wrap",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Thermocol",price:27,cat:"wrap",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Packing Paper",price:30,cat:"wrap",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Bubble Wrap Bulk",price:800,cat:"wrap",extra:"₹550–₹1100"},
+
+/* FILM */
+{name:"Stretch Wrap",price:840,cat:"film",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Shrink Wrap",price:1200,cat:"film",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Laminated Film",price:700,cat:"film",img:"https://images.unsplash.com/photo-1616627981450-2b6b3a6bce4d"},
+{name:"Stretch Film Bulk",price:700,cat:"film"},
+
+/* TAPE */
+{name:"Packing Tape",price:80,cat:"tape",img:"https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d"},
+{name:"Labels & Markers",price:20,cat:"tape",img:"https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d"},
+{name:"Tape Bulk",price:100,cat:"tape",extra:"₹75–₹140"},
+
+/* ROLL */
+{name:"Corrugated Roll",price:30,cat:"roll",img:"https://images.unsplash.com/photo-1606813909354-dc6c3b6d6c06"},
+{name:"Corrugated Roll Bulk",price:60,cat:"roll",extra:"₹50–₹65/kg"}
+
+];
+
+let cart={},total=0,current="all";
+
+function show(){
+let html="";
+products.forEach(p=>{
+if(current=="all"||p.cat==current){
+html+=`
+<div class="card">
+<img src="${p.img || 'https://via.placeholder.com/150'}">
+<p>${p.name}</p>
+<div class="price">₹${p.price}</div>
+${p.extra?`<div style="font-size:12px;color:gray">${p.extra}</div>`:""}
+<div class="controls">
+<button onclick="add('${p.name}',${p.price})">+</button>
+<button onclick="removeItem('${p.name}',${p.price})">-</button>
+</div>
+</div>`;
+}
+});
+document.getElementById("grid").innerHTML=html;
+}
+show();
+
+function filter(c){current=c;show();}
+
+function add(n,p){
+cart[n]=(cart[n]||0)+1;
+total+=p;
+update();
+}
+
+function removeItem(n,p){
+if(cart[n]){
+cart[n]--;
+total-=p;
+if(cart[n]==0) delete cart[n];
+update();
+}
+}
+
+function update(){
+let count=0;
+for(let i in cart){count+=cart[i];}
+document.getElementById("count").innerText=count;
+document.getElementById("items").innerText=count;
+document.getElementById("total").innerText=total;
+}
+
+function order(){
+let name=document.getElementById("name").value;
+let phone=document.getElementById("phone").value;
+
+if(!name||!phone){alert("Fill details");return;}
+
+let msg="🛒 Order%0AName:"+name+"%0APhone:"+phone+"%0A";
+for(let i in cart){msg+=i+" x "+cart[i]+"%0A";}
+msg+="Total ₹"+total;
+
+window.open("https://wa.me/917017670100?text="+msg);
+}
+
+</script>
+
+</body>
+</html>
